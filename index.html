@@ -1,0 +1,124 @@
+<!-- <!DOCTYPE html> -->
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" type="text/css" href="css/bulma.css">
+</head>
+<body>
+<div class="container">
+	<div class="section" id="add-menu">
+	<div class="field is-grouped">
+	  	<p class="control">
+	    	<input class="input" type="text" id="menu" placeholder="menu">
+	   	</p>
+	   	<p class="control"> 
+	    	<a class="button is-info" id="add">Add</a>
+	  	</p>
+	</div>
+	<div class="content" id="tag">
+		<ul id="tab">
+			<ol class="sortable" id="list">
+			</ol>
+		</ul>
+	</div> 
+	<div class="field">
+		<p class="control">
+		    <input type="submit" class="button is-info" name="toHierarchy" id="toHierarchy" value="save" />
+		   <a href="preview.html" class="button is-info">Preview</a>
+		   <pre id="toHierarchyOutput"></pre>
+	  	</p>
+	</div>
+</div>
+</div>
+</body>
+</html>
+<script src="js/jquery-1.11.0.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/jquery.mjs.nestedSortable.js"></script>
+<script>
+	
+	$(document).ready(function() {
+		$("#add.button").click(function() {
+			var task = $("#menu.input").val();
+			contrast(task).appendTo(".sortable");
+			$("#menu.input").val("").focus();
+		});
+		var i = 0;
+		function contrast(msg) {
+			 i = i+1;
+			var task = $("<span>").text(msg);
+			var del = $("<a>", {
+					href: "#"
+				}).html("&times;").click(function() {
+					$(this).parent().fadeOut(function () {
+						$(this).remove();
+					});
+				});
+	 		return $("<li id='item-" + i + "'>").append(task).append(del);
+		}
+		$('ol.sortable').nestedSortable({
+		
+			forcePlaceholderSize: true,
+			helper:	'clone',
+			items: 'li',
+			opacity: .6,
+			placeholder: 'placeholder',
+			revert: 250,
+			tabSize: 25,
+			tolerance: 'pointer',
+			maxLevels: 4,
+			isTree: true,
+			expandOnHover: 700,
+			startCollapsed: false,
+
+		});
+
+		$('#toHierarchy').click(function(e){
+			hiered = $('ol.sortable').nestedSortable('toHierarchy', {startDepthCount: 0});
+			hiered = dump(hiered);
+			(typeof($('#toHierarchyOutput')[0].textContent) != 'undefined') ?
+			$('#toHierarchyOutput')[0].textContent = hiered : $('#toHierarchyOutput')[0].innerText = hiered;
+		})
+
+		function dump(arr,level) {
+			var dumped_text = "";
+			if(!level) level = 0;
+
+			//The padding given at the beginning of the line.
+			var level_padding = "";
+			for(var j=0;j<level+1;j++) level_padding += "    ";
+
+			if(typeof(arr) == 'object') { //Array/Hashes/Objects
+				for(var item in arr) {
+					var value = arr[item];
+
+					if(typeof(value) == 'object') { //If it is an array,
+						dumped_text += level_padding + "'" + item + "' ...\n";
+						dumped_text += dump(value,level+1);
+					} else {
+						dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
+					}
+				}
+			} else { //Strings/Chars/Numbers etc.
+				dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
+			}
+			return dumped_text;
+			localStorage.setItem("text_menu", dumped_text);
+		}
+		// save
+		var text = [];
+		$("#toHierarchy").click(function(){
+			var lis = document.getElementsByTagName("span");
+			console.log(lis);
+			var length = lis.length;
+			console.log(length);
+			for(var i=0; i<length; i++){
+				text.push(lis[i].firstChild.nodeValue);
+			}
+			localStorage.setItem("text", text);
+
+		});
+	});
+	
+
+</script>
